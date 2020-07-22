@@ -63,7 +63,7 @@ export default {
   },
 
   data: () => ({
-    mode : 1,
+    mode : 0,
     dialog: false
   })
 };

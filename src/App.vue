@@ -10,10 +10,8 @@
           icons-and-text
           centered
         >
-          <v-tab key="0"
-            >Équipe<v-icon small>mdi-diving-scuba-flag</v-icon></v-tab
-          >
-          <v-tab key="1">Gobelets<v-icon small>mdi-beer</v-icon></v-tab>
+          <v-tab key="0">Config<v-icon small>mdi-wrench</v-icon></v-tab>
+          <v-tab key="1">Todo<v-icon small>mdi-check</v-icon></v-tab>
           <v-tab key="2">Debug<v-icon small>mdi-bug</v-icon></v-tab>
           <v-tab key="3">Score<v-icon small>mdi-counter</v-icon></v-tab>
         </v-tabs>
@@ -44,11 +42,11 @@
 
         <v-tabs-items v-model="$store.state.tab" class="w-100 pb-0">
           <v-tab-item key="0" class="w-100 h-100">
-            <Teams />
+            <Configuration />
           </v-tab-item>
 
           <v-tab-item key="1">
-            <Gobelets />
+            <Todo />
           </v-tab-item>
 
           <v-tab-item key="2">
@@ -65,20 +63,20 @@
 </template>
 
 <script>
-import Teams from "./components/Teams"
+import Configuration from "./components/Configuration"
+import Todo from "./components/Todo"
 import Score from "./components/Score"
 import Debug from "./components/Debug"
-import Gobelets from "./components/Gobelets"
 import WebSocketService from "./WebSocketService"
 
 export default {
   name: "App",
 
   components: {
-    Teams,
+    Configuration,
+    Todo,
     Score,
     Debug,
-    Gobelets
   },
 
   data() {

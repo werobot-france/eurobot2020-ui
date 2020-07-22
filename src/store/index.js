@@ -7,7 +7,7 @@ Vue.use(Vuex);
 // root state object.
 // each Vuex instance is just a single state tree.
 const state = {
-  tab: 2,
+  tab: 0,
   colors: { yellow: "yellow darken-3", purple: "purple darken-1" },
   color: "light-blue darken-2",
   gobelets: 0,

@@ -46,8 +46,9 @@ export default {
 
     this.ws.addEventListener("lidar-data", (data) => {
       data = data.detail
+      console.log(data)
       for (var i = 0; i < data.length; i++) {
-        this.addPoint(data[i][2][0]*this.tableWidth/2000, data[i][2][1]*this.tableHeight/3000, data[i][0])
+        this.addPoint(data[i][2][1]*this.tableHeight/2000, data[i][2][0]*this.tableHeight/2000, data[i][0])
       }
       this.two.update();
     })
@@ -56,14 +57,14 @@ export default {
   methods: {
 
     addPoint(centerX, centerY, angle) {
-      let point = this.two.makeCircle(centerX, centerY, 1)
+      let point = this.two.makeCircle(centerX, centerY, 3)
       point.fill = "#000000";
       point.stroke = "black";
       point.linewidth = 1;
       this.circles.push({ point, angle });
       setTimeout(() => {
         this.two.remove(point)
-      }, 5000)
+      }, 3000)
     },
 
     reset() {
