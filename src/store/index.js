@@ -33,7 +33,11 @@ const state = {
 const mutations = {
   'SET_WS': (state, instance) => {
     state.ws = instance
-  }
+  },
+  'SET_TITLE': (state, payload) => {
+    state.title = payload
+    window.title = payload + ' | eurobot2020-ui'
+  } 
 };
 
 const actions = {
