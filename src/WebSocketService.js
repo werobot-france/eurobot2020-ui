@@ -14,7 +14,6 @@ export default class WebSocketService extends EventTarget {
 
     this.ws.onmessage = (event) => {
       let parsed = JSON.parse(event.data)
-      console.log(parsed)
       this.dispatchEvent(new CustomEvent(
         parsed['responseType'], { detail: parsed['data'] })
       )

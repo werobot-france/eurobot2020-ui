@@ -164,6 +164,7 @@ export default {
   position: absolute;
   top: 1em;
   left: 1em;
+  z-index: 1;
 }
 .team-mosaic {
   padding-top: 2em;
