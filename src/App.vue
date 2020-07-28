@@ -14,8 +14,9 @@ export default {
 
   data: () => ({}),
 
-  mounted() {
-    this.$store.commit('SET_WS', new WebSocketService("192.168.43.133:8082"))
+  created () {
+    this.$store.commit('SET_WS', new WebSocketService("192.168.1.128:8082"))
+    this.$store.state.ws.open()
   }
 }
 </script>

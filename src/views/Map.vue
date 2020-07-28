@@ -1,5 +1,6 @@
 <template>
   <v-container fluid>
+    <v-col cols="12" lg="11" xl="12" class="mx-auto">
     <v-row>
       <v-col cols="12" sm="12" md="8" class="py-0">
         <div class="map">
@@ -65,13 +66,55 @@
           <v-btn color="primary" @click="toggleMesure()" class="mr-2">
             <span v-if="mesure">Cancel</span><span v-else>Mesure</span>
           </v-btn>  
-          <v-btn @click="pauseOrResume()" class="">
+          <v-btn @click="pauseOrResume()" class="mr-2">
             <span v-if="paused"><v-icon left>play_arrow</v-icon>Resume</span>
             <span v-else><v-icon left>pause</v-icon> Pause</span>
+          </v-btn>
+          <v-btn @click="openGoToModal()">
+            GoTo
+          </v-btn>
+          <v-btn @click="resetMain()">
+            Reset
           </v-btn>
         </div>
       </v-col>
     </v-row>
+    </v-col>
+    <v-dialog v-model="goToModal" max-width="400px">
+      <v-card>
+        <v-card-title>Where do you want me to go</v-card-title>
+        <v-card-text>
+          <div class="text-body-2">
+            I'm your slave do whatever you want with me!
+          </div>
+          <v-text-field
+            v-model="targetX"
+            label="X"
+          />
+          <v-text-field
+            v-model="targetY"
+            label="Y"
+          />
+          <v-text-field
+            v-model="targetTheta"
+            label="Theta"
+          />
+          <v-text-field
+            v-model="goToSpeed"
+            label="Speed"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="goToModal = false">
+            Close
+          </v-btn>
+          <v-spacer />
+          <v-btn text @click="goTo()">
+            Submit
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -96,7 +139,15 @@ export default {
 
     mainRobotPos: [0, 0, 0],
 
-    lidarPoints: []
+    lidarPoints: [],
+
+    goToModal: false,
+    targetX: 0,
+    targetY: 0,
+    targetTheta: 0,
+    goToSpeed: 40,
+
+    latchedPosition: []
   }),
 
   mounted () {
@@ -141,10 +192,16 @@ export default {
       // circle.stroke = 'orangered'; // Accepts all valid css color
       // circle.linewidth = 5;
 
+      this.renderGrid()
       this.renderRobot()
-      //this.renderGrid()
 
-      this.two.update() 
+      this.two.update()
+      
+      this.$store.state.ws.removeEventListener('lidar', this.onLidarData)
+      this.$store.state.ws.addEventListener('lidar', this.onLidarData)
+
+      this.$store.state.ws.removeEventListener('mainPosition', this.onMainPositionUpdate)
+      this.$store.state.ws.addEventListener('mainPosition', this.onMainPositionUpdate)
     },
 
     renderGrid() {
@@ -161,7 +218,7 @@ export default {
             100*h
           )
           rect.fill = 'transparent'
-          rect.stroke = '#ecf0f1'
+          rect.stroke = 'rgba(0, 0, 0, 0.25)'
         }
       }
     },
@@ -201,7 +258,7 @@ export default {
       center.fill = "white"
       this.mainRobot.linewidth = 0
 
-      this.updateRobot([500, 500, Math.PI])
+      this.updateRobot([0, 0, Math.PI])
     },
 
     updateRobot (pos) {
@@ -209,8 +266,19 @@ export default {
       this.mainRobot.translation.y = this.toX(pos[0])
       this.mainRobot.rotation = -pos[2]
       
-      pos[2] = ( pos[2] * 180/Math.PI ).toFixed(2)
+      pos[0] = pos[0].toFixed(2)
+      pos[1] = pos[1].toFixed(2)
+      pos[2] = parseFloat(( pos[2] * 180/Math.PI ).toFixed(2))
       this.mainRobotPos = pos
+    },
+
+    onMainPositionUpdate (event) {
+      this.updateRobot([
+        parseFloat(event.detail[0]),
+        parseFloat(event.detail[1]),
+        parseFloat(event.detail[2])
+      ])
+      this.two.update()
     },
 
     toggleMesure () {
@@ -222,6 +290,12 @@ export default {
       this.mesure = !this.mesure
       this.mesuredLength = 0
     },
+    
+    onLidarData (data) {
+      data = data.detail
+      this.addLidarPoint(data[0], data[1])
+      this.two.update()
+    },
 
     addLidarPoint(centerX, centerY, angle) {
       let point = this.two.makeCircle(
@@ -229,14 +303,29 @@ export default {
         this.toX(centerX),
         3
       )
-      point.fill = "white";
-      point.stroke = "black";
-      point.linewidth = 1;
-      this.lidarPoints.push({ point, angle });
+      point.fill = "white"
+      point.stroke = "black"
+      point.linewidth = 1
+      // this.lidarPoints.push({ point })
       setTimeout(() => {
         this.two.remove(point)
       }, 3000)
-      this.two.update()
+    },
+
+    openGoToModal () {
+      this.targetX = this.latchedPosition[0]
+      this.targetY = this.latchedPosition[1]
+      this.goToModal = true
+    },
+
+    goTo () {
+      this.$store.state.ws.send('goTo', {
+        x: this.targetX,
+        y: this.targetY,
+        orientation: this.targetTheta*Math.PI/180,
+        speed: this.goToSpeed
+      })
+      this.goToModal = false
     },
     
     createCross() {
@@ -297,20 +386,19 @@ export default {
     },
 
     onCanvasClick () {
-      if (
-        this.mesure && this.crossGroup !== null &&
-        this.crossGroup.children.length === 5 &&
-        this.mesuredLength !== 0
-      ) {
-        if (this.crossGroup !== null) {
-          this.crossGroup.remove()
-        }
-        this.crossGroup = null
-        this.mesuredLength = 0
-        this.mesurePoints = []
-      }
-
       if (this.mesure) {
+        if (
+          this.crossGroup !== null &&
+          this.crossGroup.children.length === 5 &&
+          this.mesuredLength !== 0
+        ) {
+          if (this.crossGroup !== null) {
+            this.crossGroup.remove()
+          }
+          this.crossGroup = null
+          this.mesuredLength = 0
+          this.mesurePoints = []
+        }
         if (this.crossGroup === null) {
           this.crossGroup = this.two.makeGroup()
         }
@@ -370,7 +458,9 @@ export default {
           this.crossGroup = null
         if (this.crossGroup === null)
           this.crossGroup = this.two.makeGroup()
-        //this.createCross()
+        
+        this.latchedPosition = [this.mousePosition[0], this.mousePosition[1]]
+        this.createCross()
       }
       this.two.update()
     },

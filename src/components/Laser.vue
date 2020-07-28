@@ -10,11 +10,7 @@
   </v-card>
 </template>
 
-
-
 <script>
-//:style="'min-width:'+tableWidth+';min-height:'+tableHeight+';'"
-import Two from "twojs-browserify"
 import wsClient from "../_websocket.js"
 
 export default {
@@ -39,31 +35,31 @@ export default {
     this.params = { width: this.tableWidth, height: this.tableHeight }
     this.two = new Two(this.params).appendTo(this.elem)
 
-    this.ws = new wsClient("192.168.1.236:8082")
+    this.ws = new wsClient("192.168.1.128:8082")
     this.ws.open()
 
     this.grid()
 
-    this.ws.addEventListener("lidar-data", (data) => {
+    this.ws.addEventListener("lidar", (data) => {
       data = data.detail
       console.log(data)
-      for (var i = 0; i < data.length; i++) {
-        this.addPoint(data[i][2][1]*this.tableHeight/2000, data[i][2][0]*this.tableHeight/2000, data[i][0])
-      }
+      this.addPoint(data[1]*this.tableHeight/2000, data[0]*this.tableHeight/2000)
       this.two.update();
     })
   },
 
   methods: {
 
-    addPoint(centerX, centerY, angle) {
-      let point = this.two.makeCircle(centerX, centerY, 3)
+    addPoint(centerY, centerX) {
+      let point = this.two.makeCircle(centerY, centerX, 3)
+      // let jpp = this.two.makeText("["+centerY.toFixed(1)+", "+centerX.toFixed(1)+"]", centerY, centerX + 5, "")
       point.fill = "#000000";
       point.stroke = "black";
       point.linewidth = 1;
-      this.circles.push({ point, angle });
+      this.circles.push({ point });
       setTimeout(() => {
         this.two.remove(point)
+        // this.two.remove(jpp)
       }, 3000)
     },
 

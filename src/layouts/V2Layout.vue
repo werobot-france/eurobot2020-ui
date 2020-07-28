@@ -60,15 +60,28 @@
           Play
         </v-tab>
       </v-tabs>
+      <v-btn
+        icon
+        disabled
+        style="position: absolute; right: 1em;">
+        <v-icon>wifi_tethering</v-icon>
+      </v-btn>
     </v-toolbar>
     <router-view></router-view>
+    <v-snackbar
+      v-model="hasError"
+      :timeout="-1"
+      color="error">
+      Olallala
+    </v-snackbar>
   </div>
 </template>
 
 <script>
 export default {
   data: () => ({
-    tab: 0
+    tab: 0,
+    hasError: false
   }),
   watch: {
     $route (to) {
@@ -78,6 +91,9 @@ export default {
   mounted () {
     //this.$store.commit('SET_TITLE', "Panel")
     this.selectRoute(this.$route)
+    
+    this.ws.removeEventListener('lidar', this.onLidarData)
+    this.ws.addEventListener('lidar', this.onLidarData)
   },
   methods: {
     navigate (routeName) {

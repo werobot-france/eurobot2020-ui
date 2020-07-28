@@ -6,12 +6,7 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: "/v1",
-    name: "V1Layout",
-    component: V1Layout
-  },
-  {
-    path: "/v2",
+    path: "",
     name: "V2Layout",
     component: () => import(/* webpackChunkName: "v2Layout" */ '../layouts/V2Layout.vue'),
     children: [
