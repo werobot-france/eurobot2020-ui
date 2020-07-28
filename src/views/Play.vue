@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-container>
     <v-btn @click="startGame()" color="primary">
       Start Game
     </v-btn>
@@ -13,17 +13,22 @@
         tile
         :class="awaitingColor"
         class="armed">
-        <div class="text-center">
-          <div>
+        <v-btn
+          class="abort-btn" icon dark outlined
+          @click="inGameModal = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <div class="text-center white--text" style="max-width: 500px;">
+          <div class="text-h3">
             Armed, awaiting game start!
           </div>
-          <div>
+          <div class="text-h6 mt-4">
             Be confident that it will not be a total disaster. I'm trusting my self!
           </div>
         </div>
       </v-card>
     </v-dialog>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -33,9 +38,16 @@ export default {
     awaitingColor: 'red',
     awaitingColors: [
       'red',
-      'orange',
-      'yellow',
-      'teal'
+      'pink',
+      'purple',
+      'deep-purple',
+      'indigo',
+      'blue',
+      'cyan',
+      'teal',
+      'green',
+      'light-green',
+      'orange'
     ]
   }),
   methods: {
@@ -60,5 +72,11 @@ export default {
   justify-content: center;
   align-items: center;
   transition: all 1s ease-in-out;
+  position: relative;
+}
+.abort-btn {
+  position: absolute;
+  top: 1em;
+  left: 1em;
 }
 </style>
