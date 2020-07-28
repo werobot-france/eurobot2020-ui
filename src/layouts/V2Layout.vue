@@ -61,13 +61,7 @@
         </v-tab>
       </v-tabs>
     </v-toolbar>
-    <v-container fluid>
-      <v-row class="justify-center">
-        <v-col cols="12" sm="12" md="8" lg="7" xl="5">
-          <router-view></router-view>
-        </v-col>
-      </v-row>
-    </v-container>
+    <router-view></router-view>
   </div>
 </template>
 
