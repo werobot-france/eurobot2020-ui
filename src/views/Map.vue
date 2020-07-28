@@ -62,11 +62,12 @@
           </v-card-text>
         </v-card>
         <div class="mt-3">
-          <v-btn @click="toggleMesure()" class="mr-2">
+          <v-btn color="primary" @click="toggleMesure()" class="mr-2">
             <span v-if="mesure">Cancel</span><span v-else>Mesure</span>
           </v-btn>  
           <v-btn @click="pauseOrResume()" class="">
-            <span v-if="paused">Resume</span><span v-else>Pause</span>
+            <span v-if="paused"><v-icon left>play_arrow</v-icon>Resume</span>
+            <span v-else><v-icon left>pause</v-icon> Pause</span>
           </v-btn>
         </div>
       </v-col>
@@ -372,6 +373,10 @@ export default {
         //this.createCross()
       }
       this.two.update()
+    },
+
+    pauseOrResume () {
+      this.paused = !this.paused
     }
   }
 }

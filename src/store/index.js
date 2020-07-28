@@ -10,6 +10,8 @@ const state = {
   tab: 0,
   colors: { yellow: "yellow darken-3", purple: "purple darken-1" },
   color: "light-blue darken-2",
+  team: '',
+  buosDisposition: 0,
   gobelets: 0,
   configs: [
     [1, 0, 1, 1, 0],
@@ -27,7 +29,8 @@ const state = {
   debugModes: [
     "Match",
     "Laser",
-  ]
+  ],
+  playState: 'armed',
 };
 
 const mutations = {
