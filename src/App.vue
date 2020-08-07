@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-main class="ma-0 pa-0">
+    <v-main>
       <v-toolbar color="primary" dark flat>
         <!-- <v-toolbar-title>{{ $store.state.title }}</v-toolbar-title>
         <v-spacer></v-spacer> -->

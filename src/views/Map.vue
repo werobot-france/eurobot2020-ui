@@ -16,8 +16,11 @@
         <v-card>
           <v-card-text>
             <v-row>
-              <v-col cols="12" xs="12" sm="6" class="py-0">
-                <div style="color: red;" class="mb-1">
+              <v-col
+                cols="12" xs="12" sm="6" class="py-0"
+                :class="selectedRobot === 1 ? 'pos-disabled' : ''">
+                <span class="grey--text">Primary</span>
+                <div style="color: red;" class="mt-1 mb-1">
                   X: {{ mainRobotPos[0] }} mm
                 </div>
                 <div style="color: green;" class="mb-1">
@@ -27,12 +30,18 @@
                   θ: {{ mainRobotPos[2] }} °
                 </div>
               </v-col>
-              <v-col cols="12" xs="12" sm="6" class="py-0">
-                <div style="color: gray;" class="mb-1">
-                  Elevator step: 500 steps
+              <v-col
+                cols="12" xs="12" sm="6" class="py-0"
+                :class="selectedRobot === 0 ? 'pos-disabled' : ''">
+                <span class="grey--text">Secondary</span>
+                <div style="color: red;" class="mt-1 mb-1">
+                  X: {{ secondaryRobotPos[0] }} mm
                 </div>
-                <div style="color: gray;">
-                  Claw angle: 10°
+                <div style="color: green;" class="mb-1">
+                  Y: {{ secondaryRobotPos[1] }} mm
+                </div>
+                <div style="color: purple;">
+                  θ: {{ secondaryRobotPos[2] }} °
                 </div>
               </v-col>
             </v-row>
@@ -43,7 +52,7 @@
             <v-row>
               <v-col cols="12" xs="12" sm="6" class="py-0">
                 <div class="mb-1">
-                  <pre>[ {{ mousePosition[0] }} , {{ mousePosition[1] }} ]</pre>
+                  <pre>[{{ mousePosition[0] }}, {{ mousePosition[1] }}]</pre>
                 </div>
                 <div>
                   <div style="color: red;" class="mb-1">
@@ -58,44 +67,62 @@
                 </div>
               </v-col>
               <v-col cols="12" xs="12" sm="6" class="py-0">
+                <v-btn color="primary" @click="toggleMesure()" class="mb-2">
+                  <v-icon left>square_foot</v-icon>
+                  <span v-if="mesure">Cancel</span><span v-else>Mesure</span>
+                </v-btn>  
+                <v-btn @click="pauseOrResume()" class="mb-2">
+                  <span v-if="paused"><v-icon left>play_arrow</v-icon>Resume</span>
+                  <span v-else><v-icon left>pause</v-icon> Pause</span>
+                </v-btn>
               </v-col>
             </v-row>
           </v-card-text>
         </v-card>
         <div class="mt-3">
-          <v-btn color="primary" @click="toggleMesure()" class="mr-2">
-            <span v-if="mesure">Cancel</span><span v-else>Mesure</span>
-          </v-btn>  
-          <v-btn @click="pauseOrResume()" class="mr-2">
-            <span v-if="paused"><v-icon left>play_arrow</v-icon>Resume</span>
-            <span v-else><v-icon left>pause</v-icon> Pause</span>
-          </v-btn>
-          <v-btn @click="openGoToModal()">
-            GoTo
-          </v-btn>
-          <v-btn @click="resetMain()">
-            Reset
-          </v-btn>
+          <v-card>
+            <v-card-text>
+              <v-tabs fixed-tabs v-model="selectedRobot">
+                <v-tab>
+                  Primary
+                </v-tab>
+                <v-tab>
+                  Secondary
+                </v-tab>
+              </v-tabs>
+              <div class="mt-4">
+                <v-btn outlined color="primary" @click="openGoToModal()" class="mr-2">
+                  GoTo
+                </v-btn>
+                <v-btn outlined color="warning" @click="resetMain()">
+                  Reset
+                </v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
         </div>
       </v-col>
     </v-row>
     </v-col>
-    <v-dialog v-model="goToModal" max-width="400px">
+    <v-dialog v-model="goToModal" max-width="600px">
       <v-card>
-        <v-card-title>Where do you want me to go</v-card-title>
+        <v-card-title>I'm the {{ selectedRobotName }} robot, where do you want me to go ?</v-card-title>
         <v-card-text>
           <div class="text-body-2">
             I'm your slave do whatever you want with me!
           </div>
           <v-text-field
+            type="number"
             v-model="targetX"
             label="X"
           />
           <v-text-field
+            type="number"
             v-model="targetY"
             label="Y"
           />
           <v-text-field
+            type="number"
             v-model="targetTheta"
             label="Theta"
           />
@@ -109,7 +136,7 @@
             Close
           </v-btn>
           <v-spacer />
-          <v-btn text @click="goTo()">
+          <v-btn text color="primary" @click="goTo()">
             Submit
           </v-btn>
         </v-card-actions>
@@ -138,6 +165,7 @@ export default {
     mainRobot: null,
 
     mainRobotPos: [0, 0, 0],
+    secondaryRobotPos: [0, 0, 0],
 
     lidarPoints: [],
 
@@ -147,8 +175,15 @@ export default {
     targetTheta: 0,
     goToSpeed: 40,
 
-    latchedPosition: []
+    latchedPosition: [],
+    selectedRobot: 0
   }),
+
+  computed: {
+    selectedRobotName () {
+      return this.selectedRobot === 0 ? 'Primary' : 'Secondary'
+    }
+  },
 
   mounted () {
     this.init()
@@ -492,6 +527,11 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
+}
+
+.pos-disabled {
+  opacity: 0.55;
+  filter: contrast(0.2);
 }
 
 </style>

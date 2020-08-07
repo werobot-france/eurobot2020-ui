@@ -1,71 +1,74 @@
 <template>
   <v-container>
-    <v-stepper v-model="step">
-      <v-stepper-items>
-        <v-stepper-content
-          style="padding-top: 0"
-          step="1"
-        >
-          <v-radio-group v-model="$store.state.buosDisposition">
-            <v-row class="ma-0 pa-0 mb-n1" v-for="i in 3" :key="i" style="cursor: pointer;">
-              <v-col cols="2 d-flex justify-center align-center">
-                <v-radio
-                  large
-                  :value="i"
-                ></v-radio>
-              </v-col>
-              <v-col cols="9  d-flex justify-center align-center">
-                <v-img
-                  @click="$store.state.buosDisposition = i"
-                  :src="'gobelets' + i + '.png'"
-                  class="w-100"
-                  contain
-                ></v-img>
-              </v-col>
-            </v-row>
-          </v-radio-group>
+    <v-row class="justify-center">
+      <v-col cols="12" sm="12" md="10" lg="8" xl="6">
+        <v-stepper v-model="step">
+          <v-stepper-items>
+            <v-stepper-content
+              style="padding-top: 0"
+              step="1"
+            >
+              <v-radio-group v-model="$store.state.buosDisposition">
+                <v-row class="ma-0 pa-0 mb-n1" v-for="i in 3" :key="i" style="cursor: pointer;">
+                  <v-col cols="2 d-flex justify-center align-center">
+                    <v-radio
+                      large
+                      :value="i"
+                    ></v-radio>
+                  </v-col>
+                  <v-col cols="9  d-flex justify-center align-center">
+                    <v-img
+                      @click="$store.state.buosDisposition = i"
+                      :src="'gobelets' + i + '.png'"
+                      class="w-100"
+                      contain
+                    ></v-img>
+                  </v-col>
+                </v-row>
+              </v-radio-group>
 
-          <v-layout class="mt-1">
-            <v-spacer />
-            <v-btn @click="step = 2" color="primary">
-              Next
-            </v-btn>
-          </v-layout>
-        </v-stepper-content>
-        <v-stepper-content
-          style="padding-top: 0"
-          step="2"
-        >
-          <div class="team-mosaic">
-            <div
-              v-for="team in [['purple', 'purple', 'Purple'], ['yellow', 'amber', 'Yellow']]"
-              :key="team[0]"
-              class="team elevation-2"
-              :class="($store.state.team !== team[0] ? 'hidden' : '') + ' ' + team[1]"
-              @click="$store.state.team = team[0]">
-              {{ team[2] }}
-            </div>
-          </div>
+              <v-layout class="mt-1">
+                <v-spacer />
+                <v-btn @click="step = 2" color="primary">
+                  Next
+                </v-btn>
+              </v-layout>
+            </v-stepper-content>
+            <v-stepper-content
+              style="padding-top: 0"
+              step="2"
+            >
+              <div class="team-mosaic">
+                <div
+                  v-for="team in [['purple', 'purple', 'Purple'], ['yellow', 'amber', 'Yellow']]"
+                  :key="team[0]"
+                  class="team elevation-2"
+                  :class="($store.state.team !== team[0] ? 'hidden' : '') + ' ' + team[1]"
+                  @click="$store.state.team = team[0]">
+                  {{ team[2] }}
+                </div>
+              </div>
 
-          <v-layout class="mt-1">
-            <v-btn @click="step = 1" text>
-              Previous
-            </v-btn>
-            <v-spacer />
-            <v-btn @click="arm()" color="primary">
-              Start Game
-            </v-btn>
-          </v-layout>
-        </v-stepper-content>
-      </v-stepper-items>
-    </v-stepper>
-    <!-- <v-layout class="mt-1">
-      <v-spacer />
-      <v-btn @click="startGame()" color="primary">
-        Start Game
-      </v-btn>
-    </v-layout> -->
-
+              <v-layout class="mt-1">
+                <v-btn @click="step = 1" text>
+                  Previous
+                </v-btn>
+                <v-spacer />
+                <v-btn @click="arm()" color="primary">
+                  Start Game
+                </v-btn>
+              </v-layout>
+            </v-stepper-content>
+          </v-stepper-items>
+        </v-stepper>
+        <!-- <v-layout class="mt-1">
+          <v-spacer />
+          <v-btn @click="startGame()" color="primary">
+            Start Game
+          </v-btn>
+        </v-layout> -->
+      </v-col>
+    </v-row>
     <v-dialog
       v-model="inGameModal"
       fullscreen
@@ -115,7 +118,7 @@
                 </div>
               </div>
             </v-toolbar>
-            <v-row class="justify-center">
+            <v-row class="justify-center" no-gutters>
               <v-col cols="12" sm="8">
                 <v-list>
                   <div
@@ -213,7 +216,7 @@ export default {
   }),
   mounted() {
     // this.inGameModal = true
-    // this.$store.commit('SET_GAME_STATE', 'endedd')
+    // this.$store.commit('SET_GAME_STATE', 'playing')
     // this.score = 42
     // this.gameCountdownFormatted = ['01', '17']
   },
@@ -242,6 +245,7 @@ export default {
       }
     },
     countdown () {
+      //console.log('countdown', this.gameCountdown)
       if (this.gameCountdown > 0) {
         this.gameCountdown--
       }
@@ -255,8 +259,7 @@ export default {
       this.gameCountdownFormatted = [minutes, seconds]
     },
     gameStart () {
-      console.log('> Play: Game started')
-      clearInterval(this.awaitingInterval)
+      console.log('> Play: Game started', 'd')
       this.$store.commit('SET_GAME_STATE', 'playing')
       this.gameCountdown = 10
       this.countdown()
@@ -264,6 +267,7 @@ export default {
         clearInterval(this.countdownInterval)
       }
       this.countdownInterval = setInterval(this.countdown, 1000)
+      clearInterval(this.awaitingInterval)
     },
     gameEnd (e) {
       console.log('> Play: Game ended')

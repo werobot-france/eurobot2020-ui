@@ -1,7 +1,12 @@
 export default class WebSocketService extends EventTarget {
   constructor(address) {
     super()
+    this.addressLocalStorageKey = 'WR_UI_SERVER_ADDRESS'
     this.address = address
+    let lsAddress = window.localStorage.getItem(this.addressLocalStorageKey)
+    if (lsAddress != null) {
+      this.address = lsAddress
+    }
     this.recovery = false
     this.handlersList = []
   }
@@ -53,11 +58,17 @@ export default class WebSocketService extends EventTarget {
 
   changeAddress(address) {
     this.address = address
+    window.localStorage.setItem(this.addressLocalStorageKey, this.address)
+    this.start()
   }
 
   send(command, args = {}) {
     if (this.ws.readyState) {
       this.ws.send(JSON.stringify({command, args}))
     }
+  }
+
+  getAddress() {
+    return this.address
   }
 }
