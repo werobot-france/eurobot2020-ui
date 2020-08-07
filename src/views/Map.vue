@@ -197,11 +197,9 @@ export default {
 
       this.two.update()
       
-      this.$store.state.ws.removeEventListener('lidar', this.onLidarData)
-      this.$store.state.ws.addEventListener('lidar', this.onLidarData)
+      this.$store.state.ws.on('lidar', 'l1', this.onLidarData)
 
-      this.$store.state.ws.removeEventListener('mainPosition', this.onMainPositionUpdate)
-      this.$store.state.ws.addEventListener('mainPosition', this.onMainPositionUpdate)
+      this.$store.state.ws.on('mainPosition', 'm1', this.onMainPositionUpdate)
     },
 
     renderGrid() {
