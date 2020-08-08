@@ -65,7 +65,9 @@
           <v-icon v-else>portable_wifi_off</v-icon>
         </v-btn>
       </v-toolbar>
-      <router-view />
+      <keep-alive>
+        <router-view />
+      </keep-alive>
       <v-snackbar
         :value="!$store.state.isConnected"
         :timeout="-1"

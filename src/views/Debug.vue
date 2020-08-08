@@ -6,12 +6,21 @@
           <v-divider />
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>
-                Server address
-              </v-list-item-title>
+              <v-list-item-title>Server address</v-list-item-title>
             </v-list-item-content>
             <v-list-item-action>
               <v-btn outlined color="primary" small @click="openAddressModal()">
+                Change
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+          <v-divider />
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Identifier</v-list-item-title>
+            </v-list-item-content>
+            <v-list-item-action>
+              <v-btn outlined color="primary" small @click="openIdentifierModal()">
                 Change
               </v-btn>
             </v-list-item-action>
@@ -116,7 +125,7 @@
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="addressModal">
+    <v-dialog v-model="addressModal" max-width="500px">
       <v-card>
         <v-card-title>Change server address</v-card-title>
         <v-card-text>
@@ -129,6 +138,19 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="identifierModal" max-width="500px">
+      <v-card>
+        <v-card-title>Change client identifier</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="clientIdentifier" label="Label" />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="identifierModal = false">Close</v-btn>
+          <v-spacer />
+          <v-btn text color="success" @click="saveIdentifier()">Set & Reload</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -137,7 +159,9 @@ export default {
   data: () => ({
     elevatorDialog: false,
     addressModal: false,
-    serverAddress: ''
+    serverAddress: '',
+    clientIdentifier: '',
+    identifierModal: false
   }),
   mounted() {
     this.$store.commit('SET_TITLE', "Debug")
@@ -150,6 +174,14 @@ export default {
     saveAddress () {
       this.$store.state.ws.changeAddress(this.serverAddress)
       this.addressModal = false
+    },
+    saveIdentifier () {
+      this.$store.state.ws.changeIdentifier(this.serverAddress)
+      this.identifierModal = false
+    },
+    openIdentifierModal () {
+      this.identifierModal = true
+      this.clientIdentifier = this.$store.state.ws.getIdentifier()
     }
   }
 }
