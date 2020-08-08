@@ -81,7 +81,7 @@
         </v-card>
         <div class="mt-3">
           <v-card>
-            <v-card-text>
+            <v-card-text class="pa-0">
               <v-tabs fixed-tabs v-model="selectedRobot">
                 <v-tab>
                   Primary
@@ -90,12 +90,12 @@
                   Secondary
                 </v-tab>
               </v-tabs>
-              <div class="mt-4">
+              <div class="pa-3">
                 <v-btn outlined color="primary" @click="openGoToModal()" class="mr-2">
-                  GoTo
+                  <v-icon left>room</v-icon> Go to
                 </v-btn>
-                <v-btn outlined color="warning" @click="resetMain()">
-                  Reset
+                <v-btn outlined color="warning" @click="reset()">
+                  <v-icon left>settings_backup_restore</v-icon> Reset
                 </v-btn>
               </div>
             </v-card-text>
@@ -107,7 +107,7 @@
     <v-dialog v-model="goToModal" max-width="600px">
       <v-card>
         <v-card-title>I'm the {{ selectedRobotName }} robot, where do you want me to go ?</v-card-title>
-        <v-card-text>
+        <v-card-text class="pb-0">
           <div class="text-body-2">
             I'm your slave do whatever you want with me!
           </div>
@@ -127,6 +127,7 @@
             label="Theta"
           />
           <v-text-field
+            type="number"
             v-model="goToSpeed"
             label="Speed"
           />
@@ -181,7 +182,7 @@ export default {
 
   computed: {
     selectedRobotName () {
-      return this.selectedRobot === 0 ? 'Primary' : 'Secondary'
+      return this.selectedRobot === 0 ? 'primary' : 'secondary'
     }
   },
 
@@ -235,6 +236,27 @@ export default {
       this.$store.state.ws.on('lidar', 'l1', this.onLidarData)
 
       this.$store.state.ws.on('mainPosition', 'm1', this.onMainPositionUpdate)
+    },
+
+    /**
+     * Data listeners
+     */
+    onMainPositionUpdate (event) {
+      console.log(event.detail)
+      if (this.paused) return
+      this.updateRobot([
+        parseFloat(event.detail[0]),
+        parseFloat(event.detail[1]),
+        parseFloat(event.detail[2])
+      ])
+      this.two.update()
+    },
+    
+    onLidarData (data) {
+      if (this.paused) return
+      data = data.detail
+      this.addLidarPoint(data[0], data[1])
+      this.two.update()
     },
 
     renderGrid() {
@@ -305,15 +327,6 @@ export default {
       this.mainRobotPos = pos
     },
 
-    onMainPositionUpdate (event) {
-      this.updateRobot([
-        parseFloat(event.detail[0]),
-        parseFloat(event.detail[1]),
-        parseFloat(event.detail[2])
-      ])
-      this.two.update()
-    },
-
     toggleMesure () {
       if (this.crossGroup !== null) {
         this.crossGroup.remove()
@@ -322,12 +335,6 @@ export default {
       this.mesurePoints = []
       this.mesure = !this.mesure
       this.mesuredLength = 0
-    },
-    
-    onLidarData (data) {
-      data = data.detail
-      this.addLidarPoint(data[0], data[1])
-      this.two.update()
     },
 
     addLidarPoint(centerX, centerY, angle) {
@@ -343,22 +350,6 @@ export default {
       setTimeout(() => {
         this.two.remove(point)
       }, 3000)
-    },
-
-    openGoToModal () {
-      this.targetX = this.latchedPosition[0]
-      this.targetY = this.latchedPosition[1]
-      this.goToModal = true
-    },
-
-    goTo () {
-      this.$store.state.ws.send('goTo', {
-        x: this.targetX,
-        y: this.targetY,
-        orientation: this.targetTheta*Math.PI/180,
-        speed: this.goToSpeed
-      })
-      this.goToModal = false
     },
     
     createCross() {
@@ -397,19 +388,18 @@ export default {
     fromY (coordinate) { return (coordinate*3000)/this.canvasWidth },
 
     onCanvasMouseMouve (event) {
-      if (this.paused) {
-        return;
-      }
-      let mouseX, mouseY = 0;
+      //if (this.paused) return
 
-      let offsetX = this.container.offsetLeft;
-      let offsetY = this.container.offsetTop;
-      let element = this.container.offsetParent;
+      let mouseX, mouseY = 0
+
+      let offsetX = this.container.offsetLeft
+      let offsetY = this.container.offsetTop
+      let element = this.container.offsetParent
 
       while(element != null) {
-        offsetX = parseInt(offsetX) + parseInt(element.offsetLeft);
-        offsetY = parseInt(offsetY) + parseInt(element.offsetTop);
-        element = element.offsetParent;
+        offsetX = parseInt(offsetX) + parseInt(element.offsetLeft)
+        offsetY = parseInt(offsetY) + parseInt(element.offsetTop)
+        element = element.offsetParent
       }
 
       mouseX = this.fromX(event.pageY - offsetY)
@@ -500,6 +490,29 @@ export default {
 
     pauseOrResume () {
       this.paused = !this.paused
+    },
+
+    openGoToModal () {
+      this.targetX = this.latchedPosition[0]
+      this.targetY = this.latchedPosition[1]
+      this.goToModal = true
+    },
+
+    goTo () {
+      this.$store.state.ws.send('goTo', {
+        robot: this.selectedRobotName,
+        x: this.targetX,
+        y: this.targetY,
+        orientation: this.targetTheta*Math.PI/180,
+        speed: this.goToSpeed
+      })
+      this.goToModal = false
+    },
+
+    reset () {
+      this.$store.state.ws.send('reset', {
+        robot: this.selectedRobotName,
+      })
     }
   }
 }
