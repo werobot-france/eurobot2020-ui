@@ -40,7 +40,7 @@
             >
               <div class="team-mosaic">
                 <div
-                  v-for="team in [['purple', 'purple', 'Purple'], ['yellow', 'amber', 'Yellow']]"
+                  v-for="team in [['blue', 'blue', 'Blue'], ['yellow', 'amber', 'Yellow']]"
                   :key="team[0]"
                   class="team elevation-2"
                   :class="($store.state.team !== team[0] ? 'hidden' : '') + ' ' + team[1]"
