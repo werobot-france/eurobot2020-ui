@@ -72,7 +72,7 @@
         :value="!$store.state.isConnected"
         :timeout="-1"
         color="error">
-        Olallala
+        Not connected
       </v-snackbar>
       <GlobalSnackbar />
     </v-main>

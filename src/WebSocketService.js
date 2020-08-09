@@ -19,6 +19,7 @@ export default class WebSocketService extends EventTarget {
     this.recovery = false
     this.isConnected = false
     this.handlersList = []
+    this.toSend = []
   }
 
   start() {
@@ -41,6 +42,10 @@ export default class WebSocketService extends EventTarget {
         'background: black; color: #00ff00; font-size: 1.1em'
       )
       this.dispatchEvent(new CustomEvent('connectionUpdated', { detail: true }))
+      this.toSend.forEach(value => {
+        this.send(value[0], value[1])
+      })
+      this.toSend = []
     }
 
     this.ws.onmessage = (event) => {
@@ -62,6 +67,11 @@ export default class WebSocketService extends EventTarget {
   }
 
   on(event, identifier, handler) {
+    if (this.isConnected) {
+      this.send('sub', { topic: event })
+    } else {
+      this.toSend.push(['sub', { topic: event }])
+    }
     let filterRes = this.handlersList.filter(h => h.identifier === identifier)
     //console.log(filterRes)
     let realHandler = e => {

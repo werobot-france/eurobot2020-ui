@@ -91,12 +91,76 @@
                 </v-tab>
               </v-tabs>
               <div class="pa-3">
-                <v-btn outlined color="primary" @click="openGoToModal()" class="mr-2">
-                  <v-icon left>room</v-icon> Go to
-                </v-btn>
-                <v-btn outlined color="warning" @click="reset()">
-                  <v-icon left>settings_backup_restore</v-icon> Reset
-                </v-btn>
+                <div class="mt-1 d-flex justify-center">
+                  <v-btn outlined color="indigo" @click="openGoToModal()" class="mr-2">
+                    <v-icon small left>room</v-icon> Go to
+                  </v-btn>
+                  <v-btn outlined color="teal" @click="openOrientToModal()" class="mr-2">
+                    <v-icon small left>flip_camera_android</v-icon> Orient to
+                  </v-btn>
+                  <v-btn outlined color="warning" @click="reset()">
+                    <v-icon>settings_backup_restore</v-icon>
+                  </v-btn>
+                </div>
+                <div v-if="selectedRobot == 0">
+                  <!-- <div class="mt-1">
+                    <v-btn small outlined color="deep-orange" @click="openGoToModal()" class="mr-2">
+                      Open Claw
+                    </v-btn>
+                    <v-btn small outlined color="deep-orange" @click="openGoToModal()" class="mr-2">
+                      Close
+                    </v-btn>
+                  </div>
+                  <div class="mt-1">
+                    <v-subheader>Elevator</v-subheader>
+                    <v-btn small outlined color="green" @click="openGoToModal()" class="mr-2">
+                      Origin Elevator
+                    </v-btn>
+                    <v-btn small outlined color="green" @click="openGoToModal()" class="mr-2">
+                      Go To
+                    </v-btn>
+                  </div> -->
+                  <v-list class="mt-2">
+                    <v-divider />
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title>
+                          Elevator
+                        </v-list-item-title>
+                      </v-list-item-content>
+                      <v-list-item-action>
+                        <div class="d-flex justify-center align-items">
+                          <v-btn outlined color="green" class="mr-2" small>
+                            Origin
+                          </v-btn>
+                          <v-btn outlined color="green" small>
+                            Go TO
+                          </v-btn>
+                        </div>
+                      </v-list-item-action>
+                    </v-list-item>
+                    <v-divider />
+
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title>
+                          Claw
+                        </v-list-item-title>
+                      </v-list-item-content>
+                      <v-list-item-action>
+                        <div class="d-flex justify-center align-items">
+                          <v-btn outlined color="deep-orange" small class="mr-2">
+                            Open
+                          </v-btn>
+                          <v-btn outlined color="deep-orange" small>
+                            Close
+                          </v-btn>
+                        </div>
+                      </v-list-item-action>
+                    </v-list-item>
+                    <v-divider />
+                  </v-list>
+                </div>
               </div>
             </v-card-text>
           </v-card>
@@ -114,22 +178,27 @@
           <v-text-field
             type="number"
             v-model="targetX"
-            label="X"
+            label="X (mm)"
           />
           <v-text-field
             type="number"
             v-model="targetY"
-            label="Y"
+            label="Y (mm)"
           />
           <v-text-field
             type="number"
             v-model="targetTheta"
-            label="Theta"
+            label="Theta (degrees)"
           />
           <v-text-field
             type="number"
-            v-model="goToSpeed"
+            v-model="actionSpeed"
             label="Speed"
+          />
+          <v-select
+            v-model="stopOn"
+            :items="sides"
+            label="Stop on"
           />
         </v-card-text>
         <v-card-actions>
@@ -138,6 +207,33 @@
           </v-btn>
           <v-spacer />
           <v-btn text color="primary" @click="goTo()">
+            Submit
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="orientToModal" max-width="600px">
+      <v-card>
+        <v-card-title>I'm the {{ selectedRobotName }} robot, where do you want me to orient ?</v-card-title>
+        <v-card-text class="pb-0">
+          <v-text-field
+            type="number"
+            v-model="targetTheta"
+            label="Theta (degrees)"
+          />
+          <v-text-field
+            type="number"
+            v-model="actionSpeed"
+            label="Speed"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="goToModal = false">
+            Close
+          </v-btn>
+          <v-spacer />
+          <v-btn text color="primary" @click="orientTo()">
             Submit
           </v-btn>
         </v-card-actions>
@@ -174,7 +270,12 @@ export default {
     targetX: 0,
     targetY: 0,
     targetTheta: 0,
-    goToSpeed: 40,
+    actionSpeed: 40,
+    stopOn: 'none',
+
+    sides: ['none', 'front', 'left', 'right'],
+    
+    orientToModal: false,
 
     latchedPosition: [],
     selectedRobot: 0
@@ -242,7 +343,7 @@ export default {
      * Data listeners
      */
     onMainPositionUpdate (event) {
-      console.log(event.detail)
+      //console.log(event.detail)
       if (this.paused) return
       this.updateRobot([
         parseFloat(event.detail[0]),
@@ -498,15 +599,33 @@ export default {
       this.goToModal = true
     },
 
+    openOrientToModal () {
+      this.targetTheta = 180
+      this.orientToModal = true
+    },
+
     goTo () {
-      this.$store.state.ws.send('goTo', {
+      let opts = {
         robot: this.selectedRobotName,
         x: this.targetX,
         y: this.targetY,
-        orientation: this.targetTheta*Math.PI/180,
-        speed: this.goToSpeed
-      })
+        theta: this.targetTheta*Math.PI/180,
+        speed: this.actionSpeed
+      }
+      if (this.stopOn != 'none') {
+        opts.stopOn = this.stopOn
+      }
+      this.$store.state.ws.send('goTo', opts)
       this.goToModal = false
+    },
+
+    orientTo () {
+      this.$store.state.ws.send('orientTo', {
+        robot: this.selectedRobotName,
+        orientation: this.targetTheta*Math.PI/180,
+        speed: this.actionSpeed
+      })
+      this.orientToModal = false
     },
 
     reset () {
