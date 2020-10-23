@@ -1,7 +1,7 @@
 {
   "name": "Supervision Panel",
   "short_name": "Supervision Panel",
-  "theme_color": "#61c58b",
+  "theme_color": "#2196f3",
   "icons": [
     {
       "src": "./img/icons/android-chrome-192x192.png",
@@ -28,5 +28,6 @@
   ],
   "start_url": ".",
   "display": "fullscreen",
-  "background_color": "#000000"
+  "orientation": "landscape",
+  "background_color": "#ffffff"
 }
